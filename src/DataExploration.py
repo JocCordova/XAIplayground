@@ -86,7 +86,7 @@ class Plotter:
         :param column: (str) column to plot
         :param savefig: (bool) specifies if plot should be saved
         """
-        df = self.df
+        df = _sort_class_column(self.df)
         path = self.path
 
         ax = sns.catplot(y=column, kind="count", data=df)
