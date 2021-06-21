@@ -40,7 +40,7 @@ class ModelTuning:
     """
 
     # TODO 0,15 Test != 0,15 Val quick maths
-    def __init__(self, X_data, y_data, test=0.15, val=0.15, random_state=42):
+    def __init__(self, X_data, y_data, test, val, random_state):
         """
         Splits the data into Train,Test,Val
         :param X_data: (df) Features
@@ -55,7 +55,7 @@ class ModelTuning:
         self.X_train, self.X_val, self.y_train, self.y_val = train_test_split(
             self.X_train, self.y_train, test_size=val, random_state=random_state)
 
-    def create_weak_learner(self, model_type="svm", random_state=42, verbose=1):
+    def create_weak_learner(self, random_state, verbose, model_type="svm"):
         """
         Creates weak learner of type dt/svm
         :param model_type: (string) model type to be created ('dt'/'svm')
@@ -71,6 +71,7 @@ class ModelTuning:
             print(_get_model_name(clf))
 
         scores = cross_validate(clf, self.X_train, self.y_train, cv=5, n_jobs=-1, scoring=SCORING, verbose=verbose)
+        clf.fit(self.X_train, self.y_train)
 
         if verbose > 0:
             print(f"avg. {clf} scores:")
@@ -81,7 +82,7 @@ class ModelTuning:
 
         return clf
 
-    def create_random_forest(self, random_state=42, verbose=1):
+    def create_random_forest(self, random_state, verbose):
         """
         Creates weak learner of type dt/svm
         :param random_state: Random state
@@ -92,6 +93,7 @@ class ModelTuning:
         print(_get_model_name(clf))
 
         scores = cross_validate(clf, self.X_train, self.y_train, cv=5, n_jobs=-1, scoring=SCORING, verbose=verbose)
+        clf.fit(self.X_train, self.y_train)
 
         if verbose > 0:
             print(f"avg. {clf} scores:")
@@ -102,7 +104,7 @@ class ModelTuning:
 
         return clf
 
-    def tune_hyperparam(self, estimator, random_state=42, verbose=1):
+    def tune_hyperparam(self, estimator, random_state, verbose):
         """
         Tunes the hyper parameters of the given estimator
         :param estimator: estimator to tune
@@ -137,7 +139,7 @@ class ModelTuning:
 
         return clf.best_estimator_
 
-    def boost_weak_learners(self, estimator, random_state=42, verbose=1):
+    def boost_weak_learners(self, estimator, random_state, verbose):
         """
         Boosts the estimator with Ada Boost
         :param estimator: estimator to boost
@@ -163,7 +165,7 @@ class ModelTuning:
 
         return rnd_search_cv_ada.best_estimator_
 
-    def get_training_set(self):
+    def get_train_set(self):
         """
         Training set getter
         :return: (X_train, y_train)
@@ -213,7 +215,7 @@ class ModelValidating:
         self.y_labels = y_labels
         self.scaler = scaler
 
-    def plot_confusion_matrix(self):
+    def plot_confusion_matrix(self, savefig=True):
         """
         plots confusion matrix
         """
@@ -229,11 +231,11 @@ class ModelValidating:
         cm_df = pd.DataFrame(cm, index=y_labels, columns=y_labels)
 
         md = ModelPlotter()
-        md.plot_confusion_matrix(cm_df, model, scaler)
+        md.plot_confusion_matrix(cm_df, model, scaler, savefig=savefig)
 
     def classification_report(self):
         """
-        prints classification report
+        returns classification report
         """
         model = self.clf
         X_data = self.X_data
