@@ -143,4 +143,4 @@ class FeaturePreprocess:
         cum_sum_eigenvalues = np.cumsum(exp_var_pca)
 
         md = ModelPlotter()
-        md.plot_pca(exp_var_pca, cum_sum_eigenvalues, scaler, threshold, savefig=True)
+        md.plot_pca(exp_var_pca, cum_sum_eigenvalues, scaler, threshold, savefig=savefig)
