@@ -3,11 +3,9 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
 from sklearn.decomposition import PCA
 import numpy as np
-import os
 
 from DataExploration import ModelPlotter
 
-FILE_NAME = os.path.dirname(os.getcwd()) + "\\data" + "\\xAPI-Edu-Data-Edited.csv"
 BASIC_DECODER = [0, 1, 2]
 
 
@@ -25,11 +23,11 @@ class Preprocess:
     Separates columns and target and tunes columns
     """
 
-    def __init__(self, data=FILE_NAME, target="Class"):
+    def __init__(self, data, target="Class"):
         """
         Loads Data and Target to be used
-        :param data:
-        :param target:
+        :param data: path to csv file to be used
+        :param target: column name of target
         """
         self.df = _load_dataset(data)
         self.target = self.df.pop(target)
@@ -97,16 +95,14 @@ class FeaturePreprocess:
     Scaling and dimensionality reduction
     """
 
-    def __init__(self, X_data, y_data, n_components=15, scaler_type="standard"):
+    def __init__(self, X_data, n_components=15, scaler_type="standard"):
         """
         Creates a pipeline with the selected scalers and reductors
         :param X_data: (df) feature columns
-        :param y_data: (df) target column
         :param n_components: (int) number of components to apply pca to
         :param scaler_type: (string) scalar to use ('standard'/'min_max')
         """
         self.X_data = X_data
-        self.y_data = y_data
         self.scale = scaler_type
 
         if scaler_type == "standard":
@@ -125,11 +121,10 @@ class FeaturePreprocess:
         :return: (X_data, y_data) transformed features, target
         """
         X_data = self.X_data
-        y_data = self.y_data
 
         X_data = self.pipeline.fit_transform(self.X_data)
 
-        return X_data, y_data
+        return X_data
 
     def plot_pca(self, threshold=None, savefig=True):
         """
