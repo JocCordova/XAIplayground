@@ -242,5 +242,22 @@ class ModelValidating:
 
         y_pred = model.predict(X_data)
 
-        print(f"Classification Report: {model}\n{classification_report(y_data, y_pred, target_names=y_labels)}")
+        return classification_report(y_data, y_pred, target_names=y_labels)
+
+    def get_scores(self):
+        """
+        returns classification report
+        """
+        model = self.clf
+        X_data = self.X_data
+        y_data = self.y_data
+
+        y_pred = model.predict(X_data)
+
+        accuracy = accuracy_score(y_data, y_pred)
+        f1 = f1_score(y_data, y_pred, average='macro')
+        return list((accuracy, f1))
+
+
+
 
