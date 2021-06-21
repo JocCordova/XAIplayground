@@ -73,7 +73,7 @@ def preprocess_features(X_data, scaler_type="standard", n_components=None, plot_
     return X_transformed
 
 
-def create_estimators(X_data, y_data, test=0.15, val=0.15, hyperparam_tune=True, boosting=True, random_state=69,
+def create_estimators(X_data, y_data, train=0.7, hyperparam_tune=True, boosting=True, random_state=69,
                       verbose=1):
     """
 
@@ -89,7 +89,7 @@ def create_estimators(X_data, y_data, test=0.15, val=0.15, hyperparam_tune=True,
     """
     estimators = []
 
-    mt = ModelTuning(X_data, y_data, test, val, random_state=random_state)
+    mt = ModelTuning(X_data, y_data, train, random_state=random_state)
 
     if verbose > 0:
         print("Creating Basic Estimators...\n")

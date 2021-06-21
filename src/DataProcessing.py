@@ -39,21 +39,20 @@ class ModelTuning:
     Creates and Tunes Models
     """
 
-    # TODO 0,15 Test != 0,15 Val quick maths
-    def __init__(self, X_data, y_data, test, val, random_state):
+    def __init__(self, X_data, y_data, train, random_state):
         """
         Splits the data into Train,Test,Val
         :param X_data: (df) Features
         :param y_data: (df) Target
-        :param test: (float) percentage for test
-        :param val: (float) percentage for val
+        :param train: (float) percentage for train
         :param random_state: Random state
         """
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X_data, y_data, test_size=test, random_state=random_state)
+        test_val = 1 - train
+        self.X_train, X_test_val, self.y_train, y_test_val = train_test_split(
+            X_data, y_data, test_size=test_val, random_state=random_state)
 
-        self.X_train, self.X_val, self.y_train, self.y_val = train_test_split(
-            self.X_train, self.y_train, test_size=val, random_state=random_state)
+        self.X_test, self.X_val, self.y_test, self.y_val = train_test_split(
+            X_test_val, y_test_val, test_size=0.5, random_state=random_state)
 
     def create_weak_learner(self, random_state, verbose, model_type="svm"):
         """
