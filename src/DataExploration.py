@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 FILE_NAME = os.path.dirname(os.getcwd()) + "\\data" + "\\xAPI-Edu-Data-Edited.csv"
-GRAPH_PATH = os.path.dirname(os.getcwd()) + "\graphs"
+GRAPH_PATH = os.path.dirname(os.getcwd()) + "\\graphs"
 
 sns.set_theme(style="ticks", color_codes=True)
 
