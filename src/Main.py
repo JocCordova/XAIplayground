@@ -1,8 +1,10 @@
 import os
+import sys
 import numpy as np
 
 from DataPreprocessing import Preprocess, FeaturePreprocess
-from DataProcessing import ModelTuning, ModelValidating
+from DataProcessing import ModelTuning, ModelValidating, save_file, load_file
+
 
 FILE_NAME = os.path.dirname(os.getcwd()) + "\\data" + "\\xAPI-Edu-Data-Edited.csv"
 
@@ -15,10 +17,11 @@ PREFIXES = ["Gender", "Nationality", "PlaceofBirth", "Stage", "Grade", "Section"
             "Absence"]
 
 
-def preprocess_data(data=FILE_NAME, count_missing=False, replace_values=True, categorical_columns=CATEGORICAL_COLUMNS,
+def preprocess_data(count_missing=False, replace_values=True, encode=True, categorical_columns=CATEGORICAL_COLUMNS,
                     prefixes=PREFIXES):
     """
 
+    :param encode:
     :param data:
     :param count_missing:
     :param replace_values:
@@ -27,7 +30,7 @@ def preprocess_data(data=FILE_NAME, count_missing=False, replace_values=True, ca
     :return:
     """
 
-    preprocess = Preprocess(data)
+    preprocess = Preprocess()
 
     if count_missing:
         print(f"Number of rows missing values: {preprocess.check_missing_values()}")
@@ -39,17 +42,17 @@ def preprocess_data(data=FILE_NAME, count_missing=False, replace_values=True, ca
         preprocess.replace_values("PlaceofBirth",
                                   ["Lybia", "Iraq", "Lebanon", "Tunisia", "SaudiArabia", "Egypt", "USA", "Venezuela",
                                    "Iran", "Morocco", "Syria", "Palestine"], "Other")
-
-    preprocess.one_hot_encode(columns=categorical_columns, prefix=prefixes)
+    if encode:
+        preprocess.one_hot_encode(columns=categorical_columns, prefix=prefixes)
     preprocess.target_encode()
-
     X_data, y_data = preprocess.get_data()
     y_labels = preprocess.target_decode()
 
     return X_data, y_data, y_labels
 
 
-def preprocess_features(X_data, scaler_type="standard", n_components=None, plot_pca=False, threshold=0.85, savefig=True):
+def preprocess_features(X_data, scaler_type="standard", n_components=None, plot_pca=False, threshold=0.85,
+                        savefig=True):
     """
 
     :param X_data:
@@ -70,7 +73,7 @@ def preprocess_features(X_data, scaler_type="standard", n_components=None, plot_
     if plot_pca:
         feature_preprocess.plot_pca(threshold=threshold, savefig=savefig)
 
-    return X_transformed
+    return X_transformed, feature_preprocess
 
 
 def create_estimators(X_data, y_data, train=0.7, hyperparam_tune=True, boosting=True, random_state=69,
@@ -180,13 +183,22 @@ def get_n_best(estimators, X_val, y_val, best_n=None, score="f1_score"):
     return best_est
 
 
+def save(models, file_name=None, suffix=None):
+    if file_name is None:
+        for model in models:
+            save_file(model, suffix=suffix)
+    else:
+        save_file(models, file_name=file_name)
+
+
 if __name__ == '__main__':
+
     print("     Preprocessing...\n")
 
     X_data, y_data, y_labels = preprocess_data()
 
-    X_data_std = preprocess_features(X_data, scaler_type="standard", plot_pca=False, n_components=21)
-    X_data_min = preprocess_features(X_data, scaler_type="min_max", plot_pca=False, n_components=13)
+    X_data_std, pipeline_std = preprocess_features(X_data, scaler_type="standard", plot_pca=False, n_components=21)
+    X_data_min, pipeline_min = preprocess_features(X_data, scaler_type="min_max", plot_pca=False, n_components=13)
 
     print("     Trainning estimators...\n")
 
@@ -206,3 +218,10 @@ if __name__ == '__main__':
 
     validate_estimators(best_std, X_val_std, y_val_std, y_labels, scaler_type="standard")
     validate_estimators(best_min, X_val_min, y_val_min, y_labels, scaler_type="min_max")
+
+    save(best_std, suffix="std")
+    save(best_min, suffix="min_max")
+    save(pipeline_std, file_name="pipeline_std")
+    save(pipeline_min, file_name="pipeline_min")
+    save(y_labels, file_name="y_labels")
+
