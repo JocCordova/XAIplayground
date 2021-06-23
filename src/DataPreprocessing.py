@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
 from sklearn.decomposition import PCA
@@ -6,6 +7,7 @@ import numpy as np
 
 from DataExploration import ModelPlotter
 
+FILE_NAME = os.path.dirname(os.getcwd()) + "\\data" + "\\xAPI-Edu-Data-Edited.csv"
 BASIC_DECODER = [0, 1, 2]
 
 
@@ -17,21 +19,39 @@ def _load_dataset(csv_file):
     """
     return pd.read_csv(csv_file)
 
+def _sort_class_column(df):
+    """
+    Sorts the dataframe by the "Class" column
+    :param df:(df) dataframe to sort
+    :return:(df) sorted dataframe
+    """
+    categories = ["L", "M", "H"]
+
+    df["Class"] = pd.Categorical(df["Class"], categories=categories)
+    df.sort_values(by="Class")
+
+    return df
 
 class Preprocess:
     """
     Separates columns and target and tunes columns
     """
 
-    def __init__(self, data, target="Class"):
+    def __init__(self, data=None, target="Class"):
         """
         Loads Data and Target to be used
         :param data: path to csv file to be used
         :param target: column name of target
         """
-        self.df = _load_dataset(data)
-        self.target = self.df.pop(target)
+
         self.encoder = LabelEncoder()
+        if data is None:
+            self.df = _sort_class_column(_load_dataset(FILE_NAME))
+        else:
+            self.df = _sort_class_column(data)
+
+        if target is not None:
+            self.target = self.df.pop(target)
 
     def check_missing_values(self):
         """
@@ -89,13 +109,22 @@ class Preprocess:
 
         return df, target
 
+    def get_features(self):
+        """
+        Gets df
+        :return: X df
+        """
+        df = self.df
+
+        return df
+
 
 class FeaturePreprocess:
     """
     Scaling and dimensionality reduction
     """
 
-    def __init__(self, X_data, n_components=15, scaler_type="standard"):
+    def __init__(self, X_data, n_components=15, scaler_type="standard", pca=True):
         """
         Creates a pipeline with the selected scalers and reductors
         :param X_data: (df) feature columns
@@ -109,22 +138,48 @@ class FeaturePreprocess:
             scaler = StandardScaler()
         if scaler_type == "min_max":
             scaler = MinMaxScaler()
+        if pca :
+            self.pca = PCA(n_components=n_components)
+            self.pipeline = make_pipeline(scaler, self.pca)
+        if not pca :
+            self.pipeline = make_pipeline(scaler)
 
-        self.pca = PCA(n_components=n_components)
-        self.pipeline = make_pipeline(scaler, self.pca)
+        self.pipeline.fit(self.X_data)
+
+    def get_scaler_type(self):
+        """
+        gets the scaler type
+        :return: scaler type
+        """
+        scaler_type = self.scale
+
+        if scaler_type == "standard":
+            return "std"
+        if scaler_type == "min_max":
+            return "min"
 
 
     def transform_data(self):
         """
-        Fits-transforms the data through the pipeline
+        transforms the data through the pipeline
 
-        :return: (X_data, y_data) transformed features, target
+        :return: (X_data) transformed features
         """
         X_data = self.X_data
 
-        X_data = self.pipeline.fit_transform(self.X_data)
+        data = self.pipeline.transform(X_data)
 
-        return X_data
+        return data
+
+    def transform_prediction(self, data):
+        """
+        transforms data through the pipeline
+
+        :return: (X_data) transformed features
+        """
+        data = self.pipeline.transform(data)
+
+        return data
 
     def plot_pca(self, threshold=None, savefig=True):
         """
