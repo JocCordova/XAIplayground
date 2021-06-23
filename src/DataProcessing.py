@@ -1,10 +1,12 @@
 import pandas as pd
+import os
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.metrics import make_scorer, accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, \
     classification_report
 from sklearn.model_selection import train_test_split, cross_validate, RandomizedSearchCV
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
+import pickle
 
 from DataExploration import ModelPlotter
 
@@ -14,8 +16,9 @@ SCORING = {'accuracy': make_scorer(accuracy_score),
            'recall': make_scorer(recall_score, average='macro'),
            'f1_macro': make_scorer(f1_score, average='macro')}
 
+MODELS_PATH = os.path.dirname(os.getcwd()) + "\\models"
 
-def _get_model_name(estimator, delim="("):
+def _get_model_type(estimator, delim="("):
     """
     Reads model name and/or type from estimator
     :param estimator:(estimator) estimator to extract name from
@@ -29,7 +32,7 @@ def _get_model_name(estimator, delim="("):
 
     # If Adaboost add type of weak learner
     if model_name == "AdaBoostClassifier":
-        model_name = text.split(delim)[1].split("=")[1]
+        model_name = model_name + "_" + text.split(delim)[1].split("=")[1]
 
     return model_name
 
@@ -64,10 +67,8 @@ class ModelTuning:
         """
         if model_type == "dt":
             clf = DecisionTreeClassifier(random_state=random_state)
-            print(_get_model_name(clf))
         if model_type == "svm":
             clf = SVC(probability=True, class_weight=None, random_state=random_state)
-            print(_get_model_name(clf))
 
         scores = cross_validate(clf, self.X_train, self.y_train, cv=5, n_jobs=-1, scoring=SCORING, verbose=verbose)
         clf.fit(self.X_train, self.y_train)
@@ -89,7 +90,6 @@ class ModelTuning:
         :return: fitted random forest classifier
         """
         clf = RandomForestClassifier(random_state=random_state)
-        print(_get_model_name(clf))
 
         scores = cross_validate(clf, self.X_train, self.y_train, cv=5, n_jobs=-1, scoring=SCORING, verbose=verbose)
         clf.fit(self.X_train, self.y_train)
@@ -103,6 +103,8 @@ class ModelTuning:
 
         return clf
 
+
+
     def tune_hyperparam(self, estimator, random_state, verbose):
         """
         Tunes the hyper parameters of the given estimator
@@ -112,7 +114,7 @@ class ModelTuning:
         :return: fitted and tuned estimator
         """
 
-        model_type = _get_model_name(estimator)
+        model_type = _get_model_type(estimator)
 
         if model_type == "DecisionTreeClassifier":
             param_distributions = {"max_features": ["auto", "sqrt", "log2", None], "max_depth": range(1, 15)}
@@ -259,6 +261,28 @@ class ModelValidating:
         f1 = f1_score(y_data, y_pred, average='macro')
         return list((accuracy, f1))
 
+
+def save_file(model, file_name=None, path=MODELS_PATH, suffix=None):
+
+    if file_name is None:
+        file_name = _get_model_type(model)
+
+    if suffix is not None:
+        file_name = file_name + "_" +str(suffix)
+
+    file = str(path) + "\\" + str(file_name)
+    pickle.dump(model, open(file, 'wb'))
+
+    print(f"File Saved as: {file_name}")
+
+
+def load_file(file_name, path=MODELS_PATH):
+    file = str(path) + "\\" + str(file_name)
+
+    model = pickle.load(open(file, 'rb'))
+    print(f"Model Loaded: {file_name}")
+
+    return model
 
 
 
