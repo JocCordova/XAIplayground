@@ -5,8 +5,6 @@ from DataPreprocessing import Preprocess
 from DataProcessing import ModelTuning, load_file
 from ModelExplainability import TabularExplainer
 
-sys.path.insert(1, os.path.dirname(os.getcwd()) + "\\pipeline")
-from DataPipeline import preprocess_data
 
 FILE_NAME = os.path.dirname(os.getcwd()) + "\\data" + "\\xAPI-Edu-Data-Edited.csv"
 
