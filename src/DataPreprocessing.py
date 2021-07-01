@@ -8,7 +8,7 @@ import numpy as np
 from DataExploration import ModelPlotter
 
 FILE_NAME = os.path.dirname(os.getcwd()) + "\\data" + "\\xAPI-Edu-Data-Edited.csv"
-BASIC_DECODER = [0, 1, 2]
+BASIC_DECODER = [1, 2, 0]
 
 
 def _load_dataset(csv_file):
