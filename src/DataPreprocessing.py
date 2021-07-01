@@ -12,19 +12,14 @@ BASIC_DECODER = [0, 1, 2]
 
 
 def _load_dataset(csv_file):
-    """
-    Loads a csv file as a data frame and returns it
-    :param csv_file: name of the csv file to load
-    :return: csv file as a df
-    """
+    # Loads a csv file as a data frame and returns it
+
     return pd.read_csv(csv_file)
 
+
 def _sort_class_column(df):
-    """
-    Sorts the dataframe by the "Class" column
-    :param df:(df) dataframe to sort
-    :return:(df) sorted dataframe
-    """
+    # Sorts the dataframe by the "Class" column
+
     categories = ["L", "M", "H"]
 
     df["Class"] = pd.Categorical(df["Class"], categories=categories)
@@ -32,16 +27,29 @@ def _sort_class_column(df):
 
     return df
 
+
 class Preprocess:
-    """
-    Separates columns and target and tunes columns
+    """Separates columns and target and tunes columns
+
+    Attributes
+    ----------
+    encoder : encoder
+        label encoder
+    df : pandas df
+        feature columns
+    target : pandas df
+        target column
     """
 
     def __init__(self, data=None, target="Class"):
-        """
-        Loads Data and Target to be used
-        :param data: path to csv file to be used
-        :param target: column name of target
+        """Loads Data and Target to be used
+
+        Parameters
+        ----------
+        data : str, optional
+            path to csv file to be used
+        target : str, default="Class"
+            column name of target
         """
 
         self.encoder = LabelEncoder()
@@ -54,10 +62,14 @@ class Preprocess:
             self.target = self.df.pop(target)
 
     def check_missing_values(self):
+        """Counts all missing row values
+
+        Returns
+        ----------
+        int
+            sum of missing values
         """
-        Counts all missing row values
-        :return: sum of missing values
-        """
+
         df = self.df
 
         null_cols = df.isnull().any(axis=1).sum()
@@ -65,44 +77,59 @@ class Preprocess:
         return null_cols
 
     def replace_values(self, column, old_values, new_value):
-        """
-        Replaces categorical values in a specific column
-        :param column: (string) column where the value is
-        :param old_values: (string/string[]) value to be changed
-        :param new_value: (string/string[]) value to be changed to
+        """Replaces categorical values in a specific column
+
+        Parameters
+        ----------
+        column : str
+            column where the value is
+        old_values : str or list of str
+            value to be replaced
+        new_value : str or list of str
+            value to be replaced to
         """
 
         for old_value in old_values:
             self.df.loc[(self.df[column] == old_value), column] = new_value
 
     def one_hot_encode(self, columns, prefix):
+        """One Hot Encodes values in a specific column with a specific prefix
+
+         Parameters
+         ----------
+         columns : str or list of str
+             columns to be encoded
+         prefix : str or list of str
+             prefix to be used
         """
-        One Hot Encodes values in a specific column with a specific prefix
-        :param columns: column to be encoded
-        :param prefix: prefix to be used
-        """
+
         self.df = pd.get_dummies(self.df, columns=columns, prefix=prefix)
 
     def target_encode(self):
-        """
-        Encodes target column
+        """Encodes target column
         """
         target = self.target
 
         self.target = self.encoder.fit_transform(target)
 
     def target_decode(self, target=BASIC_DECODER):
-        """
-        Decodes list using using target decoder
-        :param target: list to be decoded
+        """Decodes list using using target decoder
+
+        Parameters
+        ----------
+        target : {array-like, sparse matrix} , defaut=[0, 1, 2]
+            target to decode
+
+        Returns
+        ----------
+        {ndarray, sparse matrix}
+            decoded target
         """
 
         return self.encoder.inverse_transform(target)
 
     def get_data(self):
-        """
-        Gets df and target
-        :return: X df and target df
+        """Gets df and target
         """
         df = self.df
         target = self.target
@@ -110,9 +137,7 @@ class Preprocess:
         return df, target
 
     def get_features(self):
-        """
-        Gets df
-        :return: X df
+        """Gets df
         """
         df = self.df
 
@@ -120,17 +145,35 @@ class Preprocess:
 
 
 class FeaturePreprocess:
-    """
-    Scaling and dimensionality reduction
+    """Scaling and dimensionality reduction
+
+    Attributes
+    ----------
+    X_data : pandas df
+        feature columns
+    scale : str
+        scalar used
+    pca : pca
+        pca used
+    pipeline : pipeline
+        pipeline used
     """
 
     def __init__(self, X_data, n_components=15, scaler_type="standard", pca=True):
+        """Creates a pipeline with the selected scalers and
+
+        Parameters
+        ----------
+        X_data : pandas df
+            feature columns
+        n_components : int
+            number of components to apply pca to
+        scaler_type : str
+            scalar to use ('standard'/'min_max')
+        pca : bool, default=True
+            specifies if pca should be applied
         """
-        Creates a pipeline with the selected scalers and reductors
-        :param X_data: (df) feature columns
-        :param n_components: (int) number of components to apply pca to
-        :param scaler_type: (string) scalar to use ('standard'/'min_max')
-        """
+
         self.X_data = X_data
         self.scale = scaler_type
 
@@ -138,18 +181,16 @@ class FeaturePreprocess:
             scaler = StandardScaler()
         if scaler_type == "min_max":
             scaler = MinMaxScaler()
-        if pca :
+        if pca:
             self.pca = PCA(n_components=n_components)
             self.pipeline = make_pipeline(scaler, self.pca)
-        if not pca :
+        if not pca:
             self.pipeline = make_pipeline(scaler)
 
         self.pipeline.fit(self.X_data)
 
     def get_scaler_type(self):
-        """
-        gets the scaler type
-        :return: scaler type
+        """gets the scaler type
         """
         scaler_type = self.scale
 
@@ -158,12 +199,13 @@ class FeaturePreprocess:
         if scaler_type == "min_max":
             return "min"
 
-
     def transform_data(self):
-        """
-        transforms the data through the pipeline
+        """transforms the data through the pipeline
 
-        :return: (X_data) transformed features
+        Returns
+        ----------
+        {ndarray, sparse matrix}
+            transformed features
         """
         X_data = self.X_data
 
@@ -172,25 +214,38 @@ class FeaturePreprocess:
         return data
 
     def transform_prediction(self, data):
-        """
-        transforms data through the pipeline
+        """transforms prediction through the pipeline
 
-        :return: (X_data) transformed features
+        Parameters
+        ----------
+        data : pandas df
+            data to be tranformed
+
+        Returns
+        ----------
+        {ndarray, sparse matrix}
+            transformed features
+
         """
         data = self.pipeline.transform(data)
 
         return data
 
     def plot_pca(self, threshold=None, savefig=True):
+        """Plots pca values, cumulative and individual
+
+        Parameters
+        ----------
+        threshold : float range(0,1)
+            threshold to plot vertical line at
+        savefig : bool, default=True
+            specifies if plot should be saved as .png
         """
-        Plots pca values, cumulative and individual
-        :param threshold: (float range(0,1)) threshold to plot vertical line at
-        """
+
         scaler = self.scale
 
-        # TODO change variable names
-        exp_var_pca = self.pca.explained_variance_ratio_
-        cum_sum_eigenvalues = np.cumsum(exp_var_pca)
+        var_pca = self.pca.explained_variance_ratio_
+        sum_eigenvalues = np.cumsum(var_pca)
 
         md = ModelPlotter()
-        md.plot_pca(exp_var_pca, cum_sum_eigenvalues, scaler, threshold, savefig=savefig)
+        md.plot_pca(var_pca, sum_eigenvalues, scaler, threshold, savefig=savefig)
