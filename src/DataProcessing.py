@@ -299,7 +299,7 @@ class ModelValidating:
 
         y_pred = model.predict(X_data)
 
-        cm = confusion_matrix(y_data, y_pred, normalize='pred')
+        cm = confusion_matrix(y_data, y_pred, labels=[1,2,0], normalize='pred')
         cm_df = pd.DataFrame(cm, index=y_labels, columns=y_labels)
 
         md = ModelPlotter()
