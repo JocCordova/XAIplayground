@@ -5,7 +5,6 @@ import numpy as np
 from DataPreprocessing import Preprocess, FeaturePreprocess
 from DataProcessing import ModelTuning, ModelValidating, save_file, load_file
 
-
 FILE_NAME = os.path.dirname(os.getcwd()) + "\\data" + "\\xAPI-Edu-Data-Edited.csv"
 
 CATEGORICAL_COLUMNS = ["Gender", "Nationality", "PlaceofBirth", "StageID", "GradeID", "SectionID", "Topic",
@@ -19,15 +18,31 @@ PREFIXES = ["Gender", "Nationality", "PlaceofBirth", "Stage", "Grade", "Section"
 
 def preprocess_data(count_missing=False, replace_values=True, encode=True, categorical_columns=CATEGORICAL_COLUMNS,
                     prefixes=PREFIXES):
-    """
+    """Preprocesses the raw dataset
 
-    :param encode:
-    :param data:
-    :param count_missing:
-    :param replace_values:
-    :param categorical_columns:
-    :param prefixes:
-    :return:
+    Parameters
+    ----------
+    count_missing : bool, default=False
+        Counts all missing values in the dataset
+    replace_values : bool, default=True
+        Replaces non significative values in the columns "Nationality" and "PlaceofBirth" with "Other"
+    encode : bool, default=True
+        One Hot encodes categorical columns
+    categorical_columns : list of str, defaut=(categorical columns of the dataset)
+        Columns to apply one hot encode to
+    prefixes : list of str, default="["Gender", "Nationality", "PlaceofBirth", "Stage", "Grade", "Section", "Topic",
+            "Semester", "Relation", "Survey", "ParentSatisfaction",
+            "Absence"]"
+        Prefixes for one hot encoding
+
+    Returns
+    ----------
+    X_data : pandas df
+        feature columns
+    y_data : pandas df
+        target columns
+    y_labels : {ndarray, sparse matrix}
+        class labels
     """
 
     preprocess = Preprocess()
@@ -44,7 +59,9 @@ def preprocess_data(count_missing=False, replace_values=True, encode=True, categ
                                    "Iran", "Morocco", "Syria", "Palestine"], "Other")
     if encode:
         preprocess.one_hot_encode(columns=categorical_columns, prefix=prefixes)
+
     preprocess.target_encode()
+
     X_data, y_data = preprocess.get_data()
     y_labels = preprocess.target_decode()
 
@@ -53,15 +70,29 @@ def preprocess_data(count_missing=False, replace_values=True, encode=True, categ
 
 def preprocess_features(X_data, scaler_type="standard", n_components=None, plot_pca=False, threshold=0.85,
                         savefig=True):
-    """
+    """Preprocesses feature columns with a scaler and pca
 
-    :param X_data:
-    :param y_data:
-    :param n_components:
-    :param scaler_type:
-    :param plot_pca:
-    :param threshold:
-    :return:
+    Parameters
+    ----------
+    X_data : pandas df
+        feature Columns
+    scaler_type : str, default="standard"
+        scalar to use ('standard'/'min_max')
+    n_components : int, default=None
+        pca components to use, if 'None' uses all components
+    plot_pca : bool, defaut=True
+        specifies if pca should be plotted
+    threshold : float range(0,1), default=0.85
+        pca variance threshold to plot vertical line at
+    savefig : bool, default=True
+        specifies if pca plot should be saved
+
+    Returns
+    ----------
+    X_transformed : ndarray
+        preprocessed feature columns
+    feature_preprocess : feature_preprocess object
+        feature_preprocess object used (for the pipeline)
     """
     if n_components is None:
         n_components = len(X_data.columns)
@@ -76,23 +107,38 @@ def preprocess_features(X_data, scaler_type="standard", n_components=None, plot_
     return X_transformed, feature_preprocess
 
 
-def create_estimators(X_data, y_data, train=0.7, hyperparam_tune=True, boosting=True, random_state=69,
+def create_estimators(X_data, y_data, train_size=0.7, hyperparam_tune=True, boosting=True, random_state=3,
                       verbose=1):
-    """
+    """Splits the data in train, test and val, trains three different estimators: Decision Tree, Support Vector Machine
+    and Random Forest, can also tune the hyper parameters and boost the estimators with Adaboost
 
-    :param X_data:
-    :param y_data:
-    :param test:
-    :param val:
-    :param hyperparam_tune:
-    :param boosting:
-    :param random_state:
-    :param verbose:
-    :return:
+    Parameters
+    ----------
+    X_data : pandas df
+        feature Columns
+    y_data : pandas df
+        target column
+    train_size : float
+        Percentage for train
+    hyperparam_tune : bool, default=True
+        specifies if hyper params should be tuned
+    boosting : bool, default=True
+        specifies if estimators should be boosted
+    random_state : int, default=42
+        random state
+    verbose : int, default=1
+        verbosity level
+
+    Returns
+    ----------
+    estimators : list of estimators
+        trained estimators
+    mt : ModelTuning object
+        ModelTuning object used (for validation set)
     """
     estimators = []
 
-    mt = ModelTuning(X_data, y_data, train, random_state=random_state)
+    mt = ModelTuning(X_data, y_data, train_size, random_state=random_state)
 
     if verbose > 0:
         print("Creating Basic Estimators...\n")
@@ -132,11 +178,18 @@ def create_estimators(X_data, y_data, train=0.7, hyperparam_tune=True, boosting=
 
 
 def get_x_y_set(mt, type="val"):
-    """
+    """Gets data set from ModelTuning object
 
-    :param mt:
-    :param type:
-    :return:
+    Parameters
+    ----------
+    mt : ModelTuning object
+        ModelTuning object used
+    type : str, default="val"
+        specifies which set to return ('train'/'test'/'val')
+
+    Returns
+    ----------
+    X_data, y_data : ndarray
     """
     if type == "val":
         return mt.get_validation_set()
@@ -147,7 +200,28 @@ def get_x_y_set(mt, type="val"):
 
 
 def validate_estimators(estimators, X_val, y_val, y_labels, scaler_type="", plot_cf=True, clas_report=True,
-                        verbose=1, savefig=True):
+                        savefig=True):
+    """Validates estimators
+
+    Parameters
+    ----------
+    estimators : list of estimators
+        estimators to validate
+    X_val : ndarray
+        validation data
+    y_val : ndarray
+        validation labels
+    y_labels : {ndarray, sparse matrix}
+        decoded labels
+    scaler_type : str, optional
+        scaler used ('standard'/'min_max') (for plots)
+    plot_cf : bool, default=True
+        specifies if confusion matrix should be plot
+    clas_report : bool, default=True
+        specifies if Classification Report should be printed
+    savefig : bool, default=True
+        specifies if confusion matrix should be saved as .png
+    """
     for est in estimators:
 
         mv = ModelValidating(est, X_val, y_val, y_labels=y_labels, scaler=scaler_type)
@@ -155,14 +229,29 @@ def validate_estimators(estimators, X_val, y_val, y_labels, scaler_type="", plot
             mv.plot_confusion_matrix(savefig=savefig)
         if clas_report:
             report = mv.classification_report()
-            if verbose > 0:
-                print(f"Classification Report: {est}\n{report}")
+            print(f"Classification Report: {est}\n{report}")
 
 
-def get_n_best(estimators, X_val, y_val, best_n=None, score="f1_score"):
-    if best_n is None:
-        best_n = len(estimators)
-        print(best_n)
+def get_n_best(estimators, X_val, y_val, best_n=3, score="f1_score"):
+    """Gets best estimators from list
+
+    Parameters
+    ----------
+    estimators : list of estimators
+        list of trained estimators
+    X_val : ndarray
+        validation data
+    y_val : ndarray
+        validation labels
+    best_n : int, default=3
+        number of estimators to pick
+    score : str, default="f1_score"
+        metric to use for picking best estimators ('accuracy'/'f1_score')
+
+    Returns
+    ----------
+    best_est : list of estimators of len=´best_n´
+    """
 
     best_scores = []
 
@@ -184,6 +273,15 @@ def get_n_best(estimators, X_val, y_val, best_n=None, score="f1_score"):
 
 
 def save(models, file_name=None, suffix=None):
+    """Saves estimator
+
+    Parameters
+    ----------
+    file_name : str, optional
+        name for the file if None model will be saved with suffix
+    suffix : str, optional
+        suffix to be added
+    """
     if file_name is None:
         for model in models:
             save_file(model, suffix=suffix)
@@ -192,7 +290,6 @@ def save(models, file_name=None, suffix=None):
 
 
 if __name__ == '__main__':
-
     print("     Preprocessing...\n")
 
     X_data, y_data, y_labels = preprocess_data()
@@ -223,5 +320,3 @@ if __name__ == '__main__':
     save(best_min, suffix="min_max")
     save(pipeline_std, file_name="pipeline_std")
     save(pipeline_min, file_name="pipeline_min")
-    save(y_labels, file_name="y_labels")
-

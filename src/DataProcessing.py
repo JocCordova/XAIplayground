@@ -62,7 +62,7 @@ class ModelTuning:
             Features
         y_data: pandas df
             Target
-        train_size : float
+        train_size : float range(0,1)
             Percentage for train
         random_state : int
             Random state
@@ -203,18 +203,18 @@ class ModelTuning:
 
         param_distributions = {"learning_rate": [0.0001, 0.001, 0.01, 0.1], "n_estimators": [1, 10, 100, 500]}
 
-        rnd_search_cv_ada = RandomizedSearchCV(estimator=ada_clf, param_distributions=param_distributions,
+        clf = RandomizedSearchCV(estimator=ada_clf, param_distributions=param_distributions,
                                                random_state=random_state, n_iter=5, n_jobs=-1, cv=5,
                                                verbose=verbose, refit='f1_macro')
 
-        rnd_search_cv_ada.fit(self.X_train, self.y_train)
+        clf.fit(self.X_train, self.y_train)
 
         if verbose > 0:
             print(f"Best Adaboost estimator:")
-            print(rnd_search_cv_ada.best_estimator_)
-            print(f"F1 Score: {rnd_search_cv_ada.best_score_}\n")
+            print(clf.best_estimator_)
+            print(f"F1 Score: {clf.best_score_}\n")
 
-        return rnd_search_cv_ada.best_estimator_
+        return clf.best_estimator_
 
     def get_train_set(self):
         """
@@ -245,7 +245,7 @@ class ModelTuning:
 
 
 class ModelValidating:
-    """Validates the given classifier with different metrics
+    """Validates the given estimator with different metrics
 
     Attributes
     ----------
@@ -274,7 +274,7 @@ class ModelValidating:
             Validation labels
         y_labels : {ndarray, sparse matrix}
             decoded labels
-        scaler: str
+        scaler : str
             scaler used ('standard'/'min_max') (for plots)
         """
         self.clf = estimator
@@ -343,7 +343,7 @@ class ModelValidating:
 
 
 def save_file(model, file_name=None, path=MODELS_PATH, suffix=None):
-    """Saves model
+    """Saves estimator
 
     Parameters
     ----------
