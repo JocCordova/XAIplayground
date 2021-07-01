@@ -212,7 +212,7 @@ class ModelPlotter:
 
         Parameters
         ----------
-        cf_matrix : ndarray
+        cf_matrix : pandas df
             confusion matrix to be plotted
         estimator : estimator
             estimator used (for plot names)
@@ -229,8 +229,7 @@ class ModelPlotter:
         fig_dims = (10, 5)
         fig, ax = plt.subplots(figsize=fig_dims)
 
-        # TODO cmap and percentages and sort L M H
-        ax = sns.heatmap(cf_matrix, linewidths=1, annot=True, ax=ax, fmt='g', cmap="viridis")
+        ax = sns.heatmap(cf_matrix, linewidths=1, annot=True, ax=ax, fmt=".2%", cmap="Blues")
         ax.set(xlabel="Predicted Labels", ylabel="True Labels", title=(scaler_type + "_" + model_name))
 
         if savefig:
