@@ -3,19 +3,60 @@ import os
 
 
 class Predictor:
+    """Makes Prediction through the pipeline
 
-    def __init__(self, classifier, pipeline, replace_values=True):
+    Attributes
+    ----------
+    clf :  estimator
+        estimator to be used
+    pipeline : pipeline
+        pipeline to be used
+    """
+
+    def __init__(self, classifier, pipeline):
+        """
+        Parameters
+        ----------
+        classifier : estimator
+            estimator to be used
+        pipeline : pipeline
+            pipeline to be used
+        """
         self.clf = classifier
         self.pipeline = pipeline
-        self.replace_values = replace_values
+
 
     def predict_proba(self, X_data_raw):
+        """Perform classification with probabilities
+
+        Parameters
+        ----------
+        X_data_raw : array-like
+            raw data to classify
+
+        Returns
+        ----------
+        ndarray
+            probability for each class
+        """
         clf = self.clf
         pipeline = self.pipeline
 
         return clf.predict_proba(pipeline.transform_prediction(X_data_raw))
 
     def predict(self, X_data_raw):
+        """Perform classification
+
+        Parameters
+        ----------
+        X_data_raw : array-like
+            raw data to classify
+
+        Returns
+        ----------
+        ndarray
+            class labels for samples in X_data_raw
+        """
         clf = self.clf
         pipeline = self.pipeline
 
