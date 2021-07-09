@@ -45,7 +45,7 @@ def _sort_class_column(df):
     categories = ["L", "M", "H"]
 
     df["Class"] = pd.Categorical(df["Class"], categories=categories)
-    df.sort_values(by="Class")
+    df = df.sort_values(by="Class")
 
     return df
 
@@ -145,6 +145,92 @@ class Plotter:
 
         plt.show()
 
+    def plot_column_by_class_elements(self, x_column, c_column, max_columns=3, savefig=True):
+        """count_plots each element of the first column grouped on a second column
+
+        Parameters
+        ----------
+        x_column : str
+            column to plot
+        c_column : str
+            column to group on
+        max_columns : int, default=3
+            number of max columns for the axes
+        savefig : bool, default=True
+            specifies if plot should be saved as .png
+        """
+
+        df = _sort_class_column(self.df)
+        path = self.path
+
+        # Create new df containing just the two columns
+        df.groupby(x_column)
+        new_df = df[[x_column, c_column]].copy()
+        new_df.where(pd.notnull(new_df), None)
+
+        # Get unique elements of first column
+        unique_elements = new_df[x_column].unique()
+
+        # Create Figure with axes (?,max_columns)
+        ax_len = int(np.ceil(len(unique_elements) / max_columns))
+        fig, ax = plt.subplots(ax_len, max_columns)
+
+        for idx, unique in enumerate(unique_elements):
+            j = idx % max_columns
+            i = int(idx / max_columns)
+
+            # If ax_len == 1 then it's just a 1d array
+            if ax_len > 1:
+                axis = ax[i, j]
+            if ax_len == 1:
+                axis = ax[j]
+
+            g = sns.countplot(ax=axis, x=x_column, hue=c_column, data=new_df[new_df[x_column] == unique])
+
+            # Set legend outside of axis
+            axis.legend(bbox_to_anchor=(1.3, 1))
+
+            # Remove frames
+            axis.set_frame_on(False)
+
+            # Set Value on top of bar
+            for p in g.patches:
+                axis.annotate(int(np.nan_to_num(p.get_height())), (p.get_x() + 0.05, p.get_height()))
+
+            # Remove legend of all axes except last one
+            if idx < len(unique_elements) - 1:
+                axis.get_legend().remove()
+
+            # Remove x and y labels
+            axis.set_ylabel("")
+            axis.set_xlabel("")
+
+        # empty_axes is the number of axes that are empty and need to be removed
+        empty_axes = (ax_len * max_columns) % len(unique_elements) + 1
+
+        # remove empty axes
+        for j in range(1, empty_axes):
+            # If ax_len == 1 then it's just a 1d array
+            if ax_len > 1:
+                axis = ax[-1, -j]
+            if ax_len == 1:
+                axis = ax[-j]
+            # remove axis
+            axis.axis('off')
+
+        # Set x and y labels for whole figure
+        fig.suptitle(x_column)
+        fig.supylabel("Count")
+
+        # TODO REMOVE Y TICKS!!!
+
+        plt.tight_layout()
+
+        if savefig:
+            fig.savefig(path + "/count_plot_" + str(x_column) + "_" + str(c_column) + ".png", bbox_inches='tight')
+
+        plt.show()
+
 
 class ModelPlotter:
     """Plots related to the model itself
@@ -154,7 +240,6 @@ class ModelPlotter:
     path : str
         dir where plots are saved
     """
-
 
     def __init__(self, path=GRAPH_PATH):
         """Loads data and path to be used
