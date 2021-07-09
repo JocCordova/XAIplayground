@@ -320,7 +320,7 @@ class ModelValidating:
 
         y_pred = model.predict(X_data)
 
-        return classification_report(y_data, y_pred, target_names=y_labels)
+        return classification_report(y_data, y_pred, target_names=["H","L","M"])
 
     def get_scores(self):
         """Generates and returns accuracy and f1 score
