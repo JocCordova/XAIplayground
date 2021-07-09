@@ -114,6 +114,8 @@ class TabularExplainer:
         # Explain instance
         exp = self.explainer.explain_instance(X_val.iloc[data_index], pred.predict_proba, num_features=num_features,
                                               top_labels=3)
+        exp.show_in_notebook(show_table=True, show_all=True)
+
 
         label = list((X_val.iloc[data_index], X_val.iloc[data_index]))
 
