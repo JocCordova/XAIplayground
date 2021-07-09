@@ -107,7 +107,7 @@ def preprocess_features(X_data, scaler_type="standard", n_components=None, plot_
     return X_transformed, feature_preprocess
 
 
-def create_estimators(X_data, y_data, train_size=0.7, hyperparam_tune=True, boosting=True, random_state=3,
+def create_estimators(X_data, y_data, train_size=0.7, hyperparam_tune=True, boosting=True, random_state=42,
                       verbose=1):
     """Splits the data in train, test and val, trains three different estimators: Decision Tree, Support Vector Machine
     and Random Forest, can also tune the hyper parameters and boost the estimators with Adaboost
@@ -232,7 +232,7 @@ def validate_estimators(estimators, X_val, y_val, y_labels, scaler_type="", plot
             print(f"Classification Report: {est}\n{report}")
 
 
-def get_n_best(estimators, X_val, y_val, best_n=3, score="f1_score"):
+def get_n_best(estimators, X_val, y_val, y_labels, best_n=3, score="f1_score"):
     """Gets best estimators from list
 
     Parameters
@@ -243,6 +243,8 @@ def get_n_best(estimators, X_val, y_val, best_n=3, score="f1_score"):
         validation data
     y_val : ndarray
         validation labels
+    y_labels : {ndarray, sparse matrix}
+        decoded labels
     best_n : int, default=3
         number of estimators to pick
     score : str, default="f1_score"
@@ -287,6 +289,11 @@ def save(models, file_name=None, suffix=None):
             save_file(model, suffix=suffix)
     else:
         save_file(models, file_name=file_name)
+
+def load(model_name):
+    """Loads and returns pickle File
+    """
+    return load_file(model_name)
 
 
 if __name__ == '__main__':
