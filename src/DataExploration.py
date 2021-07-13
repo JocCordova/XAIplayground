@@ -89,11 +89,19 @@ class Plotter:
         df = _sort_class_column(self.df)
         path = self.path
 
-        ax = sns.catplot(y=column, kind="count", data=df)
-        ax.set(ylabel=column)
+        fig, ax = plt.subplots()
+
+        g = sns.countplot(ax=ax, y=column, orient="h", data=df)
+        g.set(ylabel=column)
+
+        # Remove frames
+        ax.set_frame_on(False)
+
+        for p in g.patches:
+            ax.annotate(p.get_width(), xy=(p.get_width()+0.2, p.get_y()+0.5), weight="bold")
 
         if savefig:
-            ax.savefig(path + "/bar_plot_" + str(column) + ".png")
+            ax.figure.savefig(path + "/bar_plot_" + str(column) + ".png")
 
         plt.show()
 
@@ -195,7 +203,7 @@ class Plotter:
 
             # Set Value on top of bar
             for p in g.patches:
-                axis.annotate(int(np.nan_to_num(p.get_height())), (p.get_x() + 0.05, p.get_height()))
+                axis.annotate(int(np.nan_to_num(p.get_height())), xy=(p.get_x() +0.02, p.get_height()), weight="bold")
 
             # Remove legend of all axes except last one
             if idx < len(unique_elements) - 1:
@@ -204,6 +212,8 @@ class Plotter:
             # Remove x and y labels
             axis.set_ylabel("")
             axis.set_xlabel("")
+
+            axis.get_yaxis().set_visible(False)
 
         # empty_axes is the number of axes that are empty and need to be removed
         empty_axes = (ax_len * max_columns) % len(unique_elements) + 1
@@ -221,8 +231,6 @@ class Plotter:
         # Set x and y labels for whole figure
         fig.suptitle(x_column)
         fig.supylabel("Count")
-
-        # TODO REMOVE Y TICKS!!!
 
         plt.tight_layout()
 
