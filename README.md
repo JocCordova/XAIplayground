@@ -1,6 +1,17 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
+XAIplayground is a Python library that facilitates the creation and comparison of explainable classification models. 
+
+This library contains four different modules, `DataExplainability`, `DataPreprocessing`, `DataProcessing`, and `ModelExplainability`. The modules can be used independently, or combined to follow the workflow from the dataset to explainable AI.
+
+DataExplainability : handles the exploration part of the workflow, by creating different plots in order to visualize the data.
+
+DataPreprocess : pre-processes the dataset by splitting the features from the taget, encoding the categorical columns, scaling the features and reducing the dimensionality of the dataset.
+
+DataProcessing : handles the "processing" of the data, by traning the models and subsequently validating them. 
+
+ModelExplainability : creates local and global explanations for the model's predictions.
 
 
 ### Built With
@@ -17,7 +28,7 @@ For a the full dependencies list, read the `requirements.txt`
 <!-- GETTING STARTED -->
 ## Getting Started
 
-To get a local copy up and running follow these simple steps.
+To get a local copy up and running in a virtual environment follow these simple steps:
 
 ### Installation
 
