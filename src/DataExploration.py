@@ -61,18 +61,22 @@ class Plotter:
         dir where plots are saved
     """
 
-    def __init__(self, data=FILE_NAME, path=GRAPH_PATH):
+    def __init__(self, data=FILE_NAME, path=GRAPH_PATH, df=False):
         """Loads data and path to be used
 
         Parameters
         ----------
-        data : str, default="\\data\\xAPI-Edu-Data-Edited.csv"
-            path to csv file to be loaded as a dataframe
+        data : str or df, default="\\data\\xAPI-Edu-Data-Edited.csv"
+            path to csv file to be loaded as a dataframe or pandas df
         path : str, default=""\\graphs""
             dir where plots are saved
+        df : bool, defaul=False
+            if True treats data as a dataframe and not as path
         """
-
-        self.df = _load_dataset(data)
+        if df:
+            self.df = data
+        else:
+            self.df = _load_dataset(data)
         self.path = _create_graphs_dir(path)
 
     def plot_column(self, column, savefig=True):
@@ -83,13 +87,14 @@ class Plotter:
         column : str
             column to plot
         savefig : bool, default=True
-            specifies if plot should be saved as .png
+            specifies if plot should be saved as .pdf
         """
 
         df = _sort_class_column(self.df)
         path = self.path
 
-        fig, ax = plt.subplots()
+        fig_dims = (10, 5)
+        fig, ax = plt.subplots(figsize=fig_dims)
 
         g = sns.countplot(ax=ax, y=column, orient="h", data=df)
         g.set(ylabel=column)
@@ -101,7 +106,7 @@ class Plotter:
             ax.annotate(p.get_width(), xy=(p.get_width()+0.2, p.get_y()+0.5), weight="bold")
 
         if savefig:
-            ax.figure.savefig(path + "/bar_plot_" + str(column) + ".png")
+            ax.figure.savefig(path + "/bar_plot_" + str(column) + ".pdf")
 
         plt.show()
 
@@ -115,7 +120,7 @@ class Plotter:
         c_column : str
             column to group on
         savefig : bool, default=True
-            specifies if plot should be saved as .png
+            specifies if plot should be saved as .pdf
         """
 
         df = _sort_class_column(self.df)
@@ -125,7 +130,7 @@ class Plotter:
         ax.set(xlabel=x_column)
 
         if savefig:
-            ax.savefig(path + "/bar_plot_" + str(x_column) + "_" + str(c_column) + ".png")
+            ax.figure.savefig(path + "/bar_plot_" + str(x_column) + "_" + str(c_column) + ".pdf")
 
         plt.show()
 
@@ -139,7 +144,7 @@ class Plotter:
         c_column : str, default="Class"
             column to group on
         savefig : bool, default=True
-            specifies if plot should be saved as .png
+            specifies if plot should be saved as .pdf
         """
 
         df = _sort_class_column(self.df)
@@ -148,8 +153,10 @@ class Plotter:
         ax = sns.histplot(data=df, x=x_column, hue=c_column, kde=True, legend=True)
         ax.set(xlabel=x_column)
 
+        plt.tight_layout()
+
         if savefig:
-            ax.figure.savefig(path + "/hist_plot_" + str(x_column) + "_" + str(c_column) + ".png")
+            ax.figure.savefig(path + "/hist_plot_" + str(x_column) + "_" + str(c_column) + ".pdf")
 
         plt.show()
 
@@ -165,7 +172,7 @@ class Plotter:
         max_columns : int, default=3
             number of max columns for the axes
         savefig : bool, default=True
-            specifies if plot should be saved as .png
+            specifies if plot should be saved as .pdf
         """
 
         df = _sort_class_column(self.df)
@@ -235,7 +242,7 @@ class Plotter:
         plt.tight_layout()
 
         if savefig:
-            fig.savefig(path + "/count_plot_" + str(x_column) + "_" + str(c_column) + ".png", bbox_inches='tight')
+            fig.savefig(path + "/count_plot_" + str(x_column) + "_" + str(c_column) + ".pdf", bbox_inches='tight')
 
         plt.show()
 
@@ -274,13 +281,16 @@ class ModelPlotter:
         pca_threshold : float range(0,1), optional
             threshold to plot vertical line at
         savefig : bool, default=True
-            specifies if plot should be saved as .png
+            specifies if plot should be saved as .pdf
         """
 
         path = self.path
 
+        plt.rcdefaults()
         fig_dims = (10, 5)
         fig, ax = plt.subplots(figsize=fig_dims)
+
+
 
         exp_df = pd.DataFrame(zip(var_pca, range(0, len(var_pca))), columns=["exp_var", "index"])
         cum_df = pd.DataFrame(zip(sum_eigenvalues, range(0, len(sum_eigenvalues))), columns=["cum_var", "index"])
@@ -296,7 +306,7 @@ class ModelPlotter:
                title=f"PCA with {scaler_type} scaler")
 
         if savefig:
-            ax.figure.savefig(path + "/pca_plot_" + str(scaler_type) + ".png")
+            ax.figure.savefig(path + "/pca_plot_" + str(scaler_type) + ".pdf")
 
         plt.show()
 
@@ -312,12 +322,17 @@ class ModelPlotter:
         scaler_type : str
             scaler type (for plot names)
         savefig : bool, default=True
-            specifies if plot should be saved as .png
+            specifies if plot should be saved as .pdf
         """
 
         path = self.path
 
         model_name = _get_model_name(estimator)
+
+        plt.rcParams["axes.titlesize"] = 20
+        plt.rcParams["axes.labelsize"] = 18
+        plt.rcParams["ytick.labelsize"] = 15
+        plt.rcParams["xtick.labelsize"] = 15
 
         fig_dims = (10, 5)
         fig, ax = plt.subplots(figsize=fig_dims)
@@ -326,6 +341,6 @@ class ModelPlotter:
         ax.set(xlabel="Predicted Labels", ylabel="True Labels", title=(scaler_type + "_" + model_name))
 
         if savefig:
-            ax.figure.savefig(f"{path}/confusion_matrix_{scaler_type}_{model_name}.png")
+            ax.figure.savefig(f"{path}/confusion_matrix_{scaler_type}_{model_name}.pdf")
 
         plt.show()
