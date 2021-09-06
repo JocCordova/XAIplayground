@@ -71,7 +71,7 @@ class ModelTuning:
         self.X_train, X_test_val, self.y_train, y_test_val = train_test_split(
             X_data, y_data, train_size=train_size, random_state=random_state)
 
-        self.X_test, self.X_val, self.y_test, self.y_val = train_test_split(
+        self.X_val,  self.X_test, self.y_val, self.y_test = train_test_split(
             X_test_val, y_test_val, test_size=0.5, random_state=random_state)
 
     def create_weak_learner(self, random_state, verbose, model_type="svm"):
@@ -164,19 +164,21 @@ class ModelTuning:
                                     'C': [1, 10, 100, 1000]},
                                    {'kernel': ['linear'], 'C': [1, 10, 100, 1000]}]
         if model_type == "RandomForestClassifier":
-            param_distributions = {"n_estimators": [1, 10, 50, 100, 200, 500],
+            param_distributions = {"n_estimators": [1, 10, 25,50, 100, 200, 500],
                                    "max_features": ["auto", "sqrt", "log2", None],
                                    "max_depth": range(1, 15)}
 
         clf = RandomizedSearchCV(estimator=estimator, param_distributions=param_distributions,
-                                 random_state=random_state, n_iter=5, n_jobs=-1, cv=5,
+                                 random_state=random_state, n_iter=5, n_jobs=-1, cv=5, scoring=SCORING,
                                  verbose=verbose, refit='f1_macro')
 
-        clf.fit(self.X_test, self.y_test)
+        clf.fit(self.X_val, self.y_val)
 
         if verbose > 0:
             print(f"Best {model_type} estimator:")
-            print(clf.best_estimator_)
+            print(f"accuracy: {clf.cv_results_['mean_test_accuracy'].mean()}")
+            print(f"precision: {clf.cv_results_['mean_test_precision'].mean()}")
+            print(f"recall: {clf.cv_results_['mean_test_recall'].mean()}")
             print(f"F1 Score: {clf.best_score_}\n")
 
         return clf.best_estimator_
@@ -204,7 +206,7 @@ class ModelTuning:
         param_distributions = {"learning_rate": [0.0001, 0.001, 0.01, 0.1], "n_estimators": [1, 10, 100, 500]}
 
         clf = RandomizedSearchCV(estimator=ada_clf, param_distributions=param_distributions,
-                                               random_state=random_state, n_iter=5, n_jobs=-1, cv=5,
+                                               random_state=random_state, n_iter=5, n_jobs=-1, cv=5, scoring=SCORING,
                                                verbose=verbose, refit='f1_macro')
 
         clf.fit(self.X_train, self.y_train)
@@ -212,6 +214,9 @@ class ModelTuning:
         if verbose > 0:
             print(f"Best Adaboost estimator:")
             print(clf.best_estimator_)
+            print(f"accuracy: {clf.cv_results_['mean_test_accuracy'].mean()}")
+            print(f"precision: {clf.cv_results_['mean_test_precision'].mean()}")
+            print(f"recall: {clf.cv_results_['mean_test_recall'].mean()}")
             print(f"F1 Score: {clf.best_score_}\n")
 
         return clf.best_estimator_
