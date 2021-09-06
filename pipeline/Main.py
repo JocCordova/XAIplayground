@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 
+sys.path.insert(1, os.path.dirname(os.getcwd()) + "\\src")
 from DataPreprocessing import Preprocess, FeaturePreprocess
 from DataProcessing import ModelTuning, ModelValidating, save_file, load_file
 
@@ -307,35 +308,3 @@ def load(model_name):
     """
     return load_file(model_name)
 
-
-if __name__ == '__main__':
-    print("     Preprocessing...\n")
-
-    X_data, y_data, y_labels = preprocess_data()
-
-    X_data_std, pipeline_std = preprocess_features(X_data, scaler_type="standard", plot_pca=False, n_components=21)
-    X_data_min, pipeline_min = preprocess_features(X_data, scaler_type="min_max", plot_pca=False, n_components=13)
-
-    print("     Trainning estimators...\n")
-
-    std_estimators, mt_std = create_estimators(X_data_std, y_data)
-    min_estimators, mt_min = create_estimators(X_data_min, y_data)
-
-    print("      Validating estimators...\n")
-
-    X_val_std, y_val_std = get_x_y_set(mt_std)
-    X_val_min, y_val_min = get_x_y_set(mt_min)
-
-    best_std = get_n_best(std_estimators, X_val_std, y_val_std, best_n=3)
-    print("     Best Standard_scaled est:", best_std)
-
-    best_min = get_n_best(min_estimators, X_val_min, y_val_min, best_n=3)
-    print("     Best Min_´Max_scaled est:", best_min)
-
-    validate_estimators(best_std, X_val_std, y_val_std, y_labels, scaler_type="standard")
-    validate_estimators(best_min, X_val_min, y_val_min, y_labels, scaler_type="min_max")
-
-    save(best_std, suffix="std")
-    save(best_min, suffix="min_max")
-    save(pipeline_std, file_name="pipeline_std")
-    save(pipeline_min, file_name="pipeline_min")
