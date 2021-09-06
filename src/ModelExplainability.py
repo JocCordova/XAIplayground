@@ -7,8 +7,6 @@ import seaborn as sns
 import shap
 import matplotlib.pyplot as plt
 from lime.lime_tabular import LimeTabularExplainer
-
-sys.path.insert(1, os.path.dirname(os.getcwd()) + "\\pipeline")
 from DataPipeline import Predictor
 
 GRAPH_PATH = os.path.dirname(os.getcwd()) + "\\graphs\\explainer"
@@ -211,6 +209,7 @@ class TabularExplainer:
             plt.savefig(path + "\\shap_" + model_name + "_" + scaler + "_" + class_name + ".pdf")
             plt.show()
 
+        # Explain classes
         for i in class_index:
             class_name = y_labels[i]
 
@@ -221,6 +220,7 @@ class TabularExplainer:
             if savefig:
                 savefig("class_" + str(class_name))
 
+        # Explain multi_class
         if multi_class:
             shap.summary_plot(shap_values=shap_values, features=X_test, class_names=y_labels, show=False, max_display=8)
             plt.title("Global explanation multi-class")
