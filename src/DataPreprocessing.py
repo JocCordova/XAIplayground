@@ -37,8 +37,8 @@ class Preprocess:
         label encoder
     df : pandas df
         feature columns
-    target : pandas df
-        target column
+    target : str, default="Class"
+        column name of target
     """
 
     def __init__(self, data=None, target="Class"):
@@ -56,10 +56,9 @@ class Preprocess:
         if data is None:
             self.df = _sort_class_column(_load_dataset(FILE_NAME))
         else:
-            self.df = _sort_class_column(data)
+            self.df = _load_dataset(data)
 
-        if target is not None:
-            self.target = self.df.pop(target)
+        self.target = target
 
     def check_missing_values(self):
         """Counts all missing row values
@@ -92,6 +91,20 @@ class Preprocess:
         for old_value in old_values:
             self.df.loc[(self.df[column] == old_value), column] = new_value
 
+    def remove_values(self, column, values):
+        """Removes row in dataframe if the values exist in a specific column
+
+        Parameters
+        ----------
+        column : str
+            column where the value is
+        values : str or list of str
+            value to be removed
+        """
+
+        for value in values:
+            self.df = self.df[self.df[column] != value]
+
     def one_hot_encode(self, columns, prefix):
         """One Hot Encodes values in a specific column with a specific prefix
 
@@ -108,9 +121,9 @@ class Preprocess:
     def target_encode(self):
         """Encodes target column
         """
-        target = self.target
 
-        self.target = self.encoder.fit_transform(target)
+        self.target = self.df.pop(self.target)
+        self.target = self.encoder.fit_transform(self.target)
 
     def target_decode(self, target=BASIC_DECODER):
         """Decodes list using using target decoder
