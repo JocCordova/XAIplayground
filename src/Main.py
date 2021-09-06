@@ -14,9 +14,11 @@ CATEGORICAL_COLUMNS = ["Gender", "Nationality", "PlaceofBirth", "StageID", "Grad
 PREFIXES = ["Gender", "Nationality", "PlaceofBirth", "Stage", "Grade", "Section", "Topic",
             "Semester", "Relation", "Survey", "ParentSatisfaction",
             "Absence"]
+REMOVE_VALUES = ["G-05", "G-09"]
 
 
-def preprocess_data(count_missing=False, replace_values=True, encode=True, categorical_columns=CATEGORICAL_COLUMNS,
+def preprocess_data(count_missing=False, replace_values=True, remove_values=False, encode=True,
+                    categorical_columns=CATEGORICAL_COLUMNS,
                     prefixes=PREFIXES):
     """Preprocesses the raw dataset
 
@@ -26,6 +28,8 @@ def preprocess_data(count_missing=False, replace_values=True, encode=True, categ
         Counts all missing values in the dataset
     replace_values : bool, default=True
         Replaces non significative values in the columns "Nationality" and "PlaceofBirth" with "Other"
+    remove_values : bool, default=False
+        Replaces rows with non significative values in the columns "GradeID"
     encode : bool, default=True
         One Hot encodes categorical columns
     categorical_columns : list of str, defaut=(categorical columns of the dataset)
@@ -57,15 +61,22 @@ def preprocess_data(count_missing=False, replace_values=True, encode=True, categ
         preprocess.replace_values("PlaceofBirth",
                                   ["Lybia", "Iraq", "Lebanon", "Tunisia", "SaudiArabia", "Egypt", "USA", "Venezuela",
                                    "Iran", "Morocco", "Syria", "Palestine"], "Other")
+
+    if remove_values:
+        preprocess.remove_values("GradeID", REMOVE_VALUES)
+
     if encode:
+        preprocess.target_encode()
         preprocess.one_hot_encode(columns=categorical_columns, prefix=prefixes)
 
-    preprocess.target_encode()
+        X_data, y_data = preprocess.get_data()
+        y_labels = preprocess.target_decode()
+
+        return X_data, y_data, y_labels
 
     X_data, y_data = preprocess.get_data()
-    y_labels = preprocess.target_decode()
 
-    return X_data, y_data, y_labels
+    return X_data, y_data
 
 
 def preprocess_features(X_data, scaler_type="standard", n_components=None, plot_pca=False, threshold=0.85,
@@ -177,14 +188,14 @@ def create_estimators(X_data, y_data, train_size=0.7, hyperparam_tune=True, boos
     return estimators, mt
 
 
-def get_x_y_set(mt, type="val"):
+def get_x_y_set(mt, type="test"):
     """Gets data set from ModelTuning object
 
     Parameters
     ----------
     mt : ModelTuning object
         ModelTuning object used
-    type : str, default="val"
+    type : str, default="test"
         specifies which set to return ('train'/'test'/'val')
 
     Returns
@@ -289,6 +300,7 @@ def save(models, file_name=None, suffix=None):
             save_file(model, suffix=suffix)
     else:
         save_file(models, file_name=file_name)
+
 
 def load(model_name):
     """Loads and returns pickle File
