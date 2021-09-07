@@ -3,7 +3,7 @@
 
 XAIplayground is a Python library that facilitates the creation and comparison of explainable classification models. 
 
-This library contains four different modules, `DataExplainability`, `DataPreprocessing`, `DataProcessing`, and `ModelExplainability`. The modules can be used independently, or combined to follow the workflow from the dataset to explainable AI.
+This library contains five different modules, `DataExplainability`, `DataPreprocessing`, `DataProcessing`, `ModelExplainability`, and `ModelPipeline`. The modules can be used independently, or combined to follow the workflow from the dataset to explainable AI.
 
 DataExplainability : handles the exploration part of the workflow, by creating different plots in order to visualize the data.
 
@@ -13,6 +13,8 @@ DataProcessing : handles the "processing" of the data, by traning the models and
 
 ModelExplainability : creates local and global explanations for the model's predictions.
 
+ModelPipeline : predicts data through the pipeline.
+
 
 ### Built With
 
@@ -21,6 +23,7 @@ ModelExplainability : creates local and global explanations for the model's pred
 * pandas 1.2.4
 * scikit-learn 0.24.2
 * lime 0.2.0.1
+* shap 0.39.0
 
 For a the full dependencies list, read the `requirements.txt` 
 
@@ -32,8 +35,8 @@ To get a local copy up and running in a virtual environment follow these simple 
 
 ### Installation
 
-1. `git clone <repo>`
-2. `cd <repo>`
+1. `git clone https://gitlab.cs.uni-duesseldorf.de/dbs/students/bachelor/ba_jose_andres_cordova`
+2. `cd /ba_jose_andres_cordova`
 3. `pip install virtualenv` 
 4. `virtualenv venv` 
 5. `venv/bin/activate` 
@@ -44,9 +47,9 @@ To get a local copy up and running in a virtual environment follow these simple 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-A project tutorial can be found in /pipeline/Tutorial.ipynb
+An example project can be found in /pipeline/AcademicPerformance.ipynb
 
-A short tutorial on the plots can be found in /pipeline/Plots.ipynb
+An example of data exploration can be found in /pipeline/DataVisualization.ipynb
 
 <!-- CONTACT -->
 ## Contact
@@ -55,5 +58,8 @@ José Andrés Cordova - jose.cordova@uni-duesseldorf.de
 
 Project Link: [https://gitlab.cs.uni-duesseldorf.de/dbs/students/bachelor/ba_jose_andres_cordova](https://gitlab.cs.uni-duesseldorf.de/dbs/students/bachelor/ba_jose_andres_cordova)
 
+<!-- LICENSE -->
+## License
 
+[Apache License 2.0](https://choosealicense.com/licenses/apache-2.0//)
 
