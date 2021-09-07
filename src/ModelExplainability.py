@@ -7,10 +7,9 @@ import seaborn as sns
 import shap
 import matplotlib.pyplot as plt
 from lime.lime_tabular import LimeTabularExplainer
-from DataPipeline import Predictor
+from ModelPipeline import Predictor
 
 GRAPH_PATH = os.path.dirname(os.getcwd()) + "\\graphs\\explainer"
-CATEGORICAL_FEATURE = [0, 1, 2, 3, 4, 5, 6, 7, 8, 13, 14, 15]
 
 
 def _get_model_name(estimator, delim="("):
@@ -201,7 +200,7 @@ class TabularExplainer:
 
         plt.tight_layout()
 
-        def savefig(class_name):
+        def saveplt(class_name):
             plt.tight_layout()
             class_name = class_name + suffix
 
@@ -218,7 +217,7 @@ class TabularExplainer:
             plt.title("Global explanation for Class " + str(class_name))
 
             if savefig:
-                savefig("class_" + str(class_name))
+                saveplt("class_" + str(class_name))
 
         # Explain multi_class
         if multi_class:
@@ -226,6 +225,4 @@ class TabularExplainer:
             plt.title("Global explanation multi-class")
 
             if savefig:
-                savefig("multiclass")
-
-
+                saveplt("multiclass")
