@@ -1,5 +1,5 @@
 import os
-import sys
+from sys import platform
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -9,7 +9,17 @@ import matplotlib.pyplot as plt
 from lime.lime_tabular import LimeTabularExplainer
 from ModelPipeline import Predictor
 
-GRAPH_PATH = os.path.dirname(os.getcwd()) + "\\graphs\\explainer"
+if platform == "linux" or platform == "linux2":
+    LINUX = True
+    GRAPH_PATH = os.path.dirname(os.getcwd()) + "/graphs/explainer"
+elif platform == "win32":
+    LINUX = False
+    GRAPH_PATH = os.path.dirname(os.getcwd()) + "\\graphs\\explainer"
+elif platform == "darwin":
+    LINUX = True
+    GRAPH_PATH = os.path.dirname(os.getcwd()) + "/graphs/explainer"
+
+
 
 
 def _get_model_name(estimator, delim="("):
@@ -141,8 +151,14 @@ class TabularExplainer:
         plt.tight_layout()
 
         if savefig:
-            exp.save_to_file(path + "\\lime_" + model_name + "_" + scaler + "_" + str(data_index) + suffix + ".html")
-            plt.savefig(path + "\\lime_" + model_name + "_" + scaler + "_" + str(data_index) + suffix + ".pdf")
+            
+            if LINUX:
+                exp.save_to_file(path + "/lime_" + model_name + "_" + scaler + "_" + str(data_index) + suffix + ".html")
+                plt.savefig(path + "/lime_" + model_name + "_" + scaler + "_" + str(data_index) + suffix + ".pdf")
+            else:
+                exp.save_to_file(path + "\\lime_" + model_name + "_" + scaler + "_" + str(data_index) + suffix + ".html")
+                plt.savefig(path + "\\lime_" + model_name + "_" + scaler + "_" + str(data_index) + suffix + ".pdf")
+
 
         plt.show()
 
@@ -205,7 +221,12 @@ class TabularExplainer:
             class_name = class_name + suffix
 
             plt.rcParams["image.cmap"] = 'Pastel1'
-            plt.savefig(path + "\\shap_" + model_name + "_" + scaler + "_" + class_name + ".pdf")
+            
+            if LINUX:
+                plt.savefig(path + "/shap_" + model_name + "_" + scaler + "_" + class_name + ".pdf")
+            else:
+                plt.savefig(path + "\\shap_" + model_name + "_" + scaler + "_" + class_name + ".pdf")
+            
             plt.show()
 
         # Explain classes

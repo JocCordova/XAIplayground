@@ -1,17 +1,23 @@
 import os
-import sys
 import numpy as np
 
-sys.path.insert(1, os.path.dirname(os.getcwd()) + "\\src")
+from sys import platform, path
+if platform == "linux" or platform == "linux2":
+    path.insert(1, os.path.dirname(os.getcwd()) + "/src")
+    FILE_NAME = os.path.dirname(os.getcwd()) + "/data" + "/xAPI-Edu-Data-Edited.csv"
+elif platform == "win32":
+    path.insert(1, os.path.dirname(os.getcwd()) + "\\src")
+    FILE_NAME = os.path.dirname(os.getcwd()) + "\\data" + "\\xAPI-Edu-Data-Edited.csv"
+elif platform == "darwin":
+    path.insert(1, os.path.dirname(os.getcwd()) + "/src")
+    FILE_NAME = os.path.dirname(os.getcwd()) + "/data" + "/xAPI-Edu-Data-Edited.csv"
+    
 from DataPreprocessing import Preprocess, FeaturePreprocess
 from DataProcessing import ModelTuning, ModelValidating, save_file, load_file
-
-FILE_NAME = os.path.dirname(os.getcwd()) + "\\data" + "\\xAPI-Edu-Data-Edited.csv"
 
 CATEGORICAL_COLUMNS = ["Gender", "Nationality", "PlaceofBirth", "StageID", "GradeID", "SectionID", "Topic",
                        "Semester", "Relation", "ParentAnsweringSurvey", "ParentSchoolSatisfaction",
                        "StudentAbsenceDays"]
-
 PREFIXES = ["Gender", "Nationality", "PlaceofBirth", "Stage", "Grade", "Section", "Topic",
             "Semester", "Relation", "Survey", "ParentSatisfaction",
             "Absence"]
@@ -50,7 +56,7 @@ def preprocess_data(count_missing=False, replace_values=True, remove_values=Fals
         class labels
     """
 
-    preprocess = Preprocess()
+    preprocess = Preprocess(data=FILE_NAME)
 
     if count_missing:
         print(f"Number of rows missing values: {preprocess.check_missing_values()}")
@@ -82,7 +88,8 @@ def preprocess_data(count_missing=False, replace_values=True, remove_values=Fals
 
 def preprocess_features(X_data, scaler_type="standard", n_components=None, plot_pca=False, threshold=0.85,
                         savefig=True):
-    """Preprocesses feature columns with a scaler and pca
+    """
+    processes feature columns with a scaler and pca
 
     Parameters
     ----------

@@ -1,6 +1,7 @@
 import os
 import pickle
 import pandas as pd
+from sys import platform, path
 
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.metrics import make_scorer, accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, \
@@ -17,7 +18,15 @@ SCORING = {'accuracy': make_scorer(accuracy_score),
            'recall': make_scorer(recall_score, average='macro'),
            'f1_macro': make_scorer(f1_score, average='macro')}
 
-MODELS_PATH = os.path.dirname(os.getcwd()) + "\\models"
+if platform == "linux" or platform == "linux2":
+    LINUX = True
+    MODELS_PATH = os.path.dirname(os.getcwd()) + "/models"
+elif platform == "win32":
+    LINUX = False
+    MODELS_PATH = os.path.dirname(os.getcwd()) + "\\models"
+elif platform == "darwin":
+    LINUX = True
+    MODELS_PATH = os.path.dirname(os.getcwd()) + "/models"
 
 
 def _get_model_type(estimator, delim="("):
@@ -365,7 +374,11 @@ def save_file(model, file_name=None, path=MODELS_PATH, suffix=None):
     if suffix is not None:
         file_name = file_name + "_" + str(suffix)
 
-    file = str(path) + "\\" + str(file_name)
+    if LINUX:
+        file = str(path) + "/" + str(file_name)
+    else:
+        file = str(path) + "\\" + str(file_name)
+    
     pickle.dump(model, open(file, 'wb'))
 
     print(f"File Saved as: {file_name}")
@@ -387,7 +400,10 @@ def load_file(file_name, path=MODELS_PATH):
         loaded model
     """
 
-    file = str(path) + "\\" + str(file_name)
+    if LINUX:
+        file = str(path) + "/" + str(file_name)
+    else:
+        file = str(path) + "\\" + str(file_name)
 
     model = pickle.load(open(file, 'rb'))
     print(f"Model Loaded: {file_name}")

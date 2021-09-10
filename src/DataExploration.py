@@ -1,12 +1,18 @@
 import matplotlib.pyplot as plt
+from sys import platform
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import os
 from pathlib import Path
 
-FILE_NAME = os.path.dirname(os.getcwd()) + "\\data" + "\\xAPI-Edu-Data-Edited.csv"
-GRAPH_PATH = os.path.dirname(os.getcwd()) + "\\graphs"
+if platform == "linux" or platform == "linux2":
+    GRAPH_PATH = os.path.dirname(os.getcwd()) + "/graphs"
+elif platform == "win32":
+    GRAPH_PATH = os.path.dirname(os.getcwd()) + "\\graphs"
+elif platform == "darwin":
+    GRAPH_PATH = os.path.dirname(os.getcwd()) + "/graphs"
+
 
 sns.set_theme(style="ticks", color_codes=True)
 
@@ -39,13 +45,11 @@ def _get_model_name(estimator, delim="("):
     return model_name
 
 
-def _sort_class_column(df):
+def _sort_class_column(df,target,categories):
     # Sorts the dataframe by the "Class" column
 
-    categories = ["L", "M", "H"]
-
-    df["Class"] = pd.Categorical(df["Class"], categories=categories)
-    df = df.sort_values(by="Class")
+    df[target] = pd.Categorical(df[target], categories=categories)
+    df.sort_values(by=target)
 
     return df
 
@@ -61,22 +65,32 @@ class Plotter:
         dir where plots are saved
     """
 
-    def __init__(self, data=FILE_NAME, path=GRAPH_PATH, df=False):
+    def __init__(self, data, path=GRAPH_PATH, df=False, target="Class",sort_target=True,categories=None):
         """Loads data and path to be used
 
         Parameters
         ----------
-        data : str or df, default="\\data\\xAPI-Edu-Data-Edited.csv"
+        data : str or df
             path to csv file to be loaded as a dataframe or pandas df
         path : str, default=""\\graphs""
             dir where plots are saved
         df : bool, defaul=False
             if True treats data as a dataframe and not as path
+        target : str, default="Class"
+            column name of target
+        sort_target : bool, default=True
+            specifies if data should be sorted
+        categories : list of str,
+            order to be sorted to
         """
         if df:
             self.df = data
         else:
             self.df = _load_dataset(data)
+            
+        if sort_target:
+            self.df = _sort_class_column(self.df,target,categories)
+            
         self.path = _create_graphs_dir(path)
 
     def plot_column(self, column, savefig=True):
@@ -89,8 +103,8 @@ class Plotter:
         savefig : bool, default=True
             specifies if plot should be saved as .pdf
         """
-
-        df = _sort_class_column(self.df)
+        
+        df = self.df
         path = self.path
 
         fig_dims = (10, 5)
@@ -123,7 +137,7 @@ class Plotter:
             specifies if plot should be saved as .pdf
         """
 
-        df = _sort_class_column(self.df)
+        df = self.df
         path = self.path
 
         ax = sns.catplot(y=x_column, hue=c_column, kind="count", data=df)
@@ -146,8 +160,8 @@ class Plotter:
         savefig : bool, default=True
             specifies if plot should be saved as .pdf
         """
-
-        df = _sort_class_column(self.df)
+        
+        df = self.df
         path = self.path
 
         ax = sns.histplot(data=df, x=x_column, hue=c_column, kde=True, legend=True)
@@ -175,7 +189,7 @@ class Plotter:
             specifies if plot should be saved as .pdf
         """
 
-        df = _sort_class_column(self.df)
+        df = self.df
         path = self.path
 
         # Create new df containing just the two columns

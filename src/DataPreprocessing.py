@@ -7,7 +7,6 @@ import numpy as np
 
 from DataExploration import ModelPlotter
 
-FILE_NAME = os.path.dirname(os.getcwd()) + "\\data" + "\\xAPI-Edu-Data-Edited.csv"
 BASIC_DECODER = [1, 2, 0]
 
 
@@ -17,13 +16,11 @@ def _load_dataset(csv_file):
     return pd.read_csv(csv_file)
 
 
-def _sort_class_column(df):
+def _sort_class_column(df,target,categories):
     # Sorts the dataframe by the "Class" column
 
-    categories = ["L", "M", "H"]
-
-    df["Class"] = pd.Categorical(df["Class"], categories=categories)
-    df.sort_values(by="Class")
+    df[target] = pd.Categorical(df[target], categories=categories)
+    df.sort_values(by=target)
 
     return df
 
@@ -41,22 +38,20 @@ class Preprocess:
         column name of target
     """
 
-    def __init__(self, data=None, target="Class"):
+    def __init__(self, data,target="Class"):
         """Loads Data and Target to be used
 
         Parameters
         ----------
-        data : str, optional
+        data : str
             path to csv file to be used
         target : str, default="Class"
             column name of target
         """
 
         self.encoder = LabelEncoder()
-        if data is None:
-            self.df = _sort_class_column(_load_dataset(FILE_NAME))
-        else:
-            self.df = _load_dataset(data)
+       
+        self.df = _load_dataset(data)
 
         self.target = target
 
