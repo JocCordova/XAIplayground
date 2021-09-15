@@ -16,3 +16,6 @@ pip-delete-this-directory.txt
 # Environment
 venv/
 ba_venv/
+
+#IntelliJ files
+.idea/
