@@ -1,5 +1,5 @@
 <!-- ABOUT THE PROJECT -->
-## About The Project
+## About XAIplayground
 
 XAIplayground is a Python library that facilitates the creation and comparison of explainable classification models. 
 
