@@ -25,7 +25,7 @@ ModelPipeline : predicts data through the pipeline.
 * lime 0.2.0.1
 * shap 0.39.0
 
-For a the full dependencies list, read the `requirements.txt` 
+For a the full dependencies list, read the `requirements_win.txt` 
 
 
 <!-- GETTING STARTED -->
@@ -35,14 +35,22 @@ To get a local copy up and running in a virtual environment follow these simple 
 
 ### Installation
 
+
 1. `git clone https://gitlab.cs.uni-duesseldorf.de/dbs/students/bachelor/ba_jose_andres_cordova`
 2. `cd /ba_jose_andres_cordova`
 3. `pip install virtualenv` 
 4. `virtualenv venv` 
-5. `venv/bin/activate` 
-6. `pip install -r requirements.txt`
+
+Linux|Windows
+-----|----
+5\. run `venv/bin/activate`|5. run `venv/Scripts/activate` 
+6\. `pip install -r requirements_linux.txt`|6. `pip install -r requirements_win.txt`
+
+#### Troubleshooting
 
 
+
+SHAP not installing on Linux : `sudo apt-get install python3-dev`.
 
 <!-- USAGE EXAMPLES -->
 ## Usage
